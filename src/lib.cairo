@@ -1,32 +1,37 @@
-/// Interface representing `HelloContract`.
-/// This interface allows modification and retrieval of the contract balance.
+use core::starknet::contract_address::ContractAddress;
+
+// Define the contract interface
 #[starknet::interface]
-pub trait IHelloStarknet<TContractState> {
-    /// Increase contract balance.
-    fn increase_balance(ref self: TContractState, amount: felt252);
-    /// Retrieve contract balance.
-    fn get_balance(self: @TContractState) -> felt252;
+trait IStudentStorage<TContractState> {
+    fn set_student_data(ref self: TContractState, name: felt252, age: u8);
+    fn get_student_data(self: @TContractState) -> (felt252, u8);
 }
 
-/// Simple contract for managing balance.
+// Define the contract module
 #[starknet::contract]
-mod HelloStarknet {
+mod StudentStorage {
     use core::starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
+    // Define the storage struct
     #[storage]
     struct Storage {
-        balance: felt252,
+        name: felt252,
+        age: u8,
     }
 
+    // Implement the contract interface
     #[abi(embed_v0)]
-    impl HelloStarknetImpl of super::IHelloStarknet<ContractState> {
-        fn increase_balance(ref self: ContractState, amount: felt252) {
-            assert(amount != 0, 'Amount cannot be 0');
-            self.balance.write(self.balance.read() + amount);
+    impl StudentStorageImpl of super::IStudentStorage<ContractState> {
+        // Set the student's name and age
+        fn set_student_data(ref self: ContractState, name: felt252, age: u8) {
+            self.name.write(name);
+            self.age.write(age);
         }
 
-        fn get_balance(self: @ContractState) -> felt252 {
-            self.balance.read()
+        // Get the student's name and age
+        fn get_student_data(self: @ContractState) -> (felt252, u8) {
+            (self.name.read(), self.age.read())
         }
     }
 }
+
